@@ -142,11 +142,16 @@ jobs:
 
     - name: Sync Device Dependencies
       run: |
-        bash ${GITHUB_WORKSPACE}/scripts/convert.sh ${{ github.event.inputs.DEVICE_PATH }}/${{ steps.buildtree.outputs.value }}.dependencies
+        DEP_FILE="${{ github.event.inputs.DEVICE_PATH }}/${{ steps.buildtree.outputs.value }}.dependencies"
+        if [ -f "$DEP_FILE" ]; then
+          chmod a+x ${GITHUB_WORKSPACE}/scripts/convert.sh
+          bash ${GITHUB_WORKSPACE}/scripts/convert.sh "$DEP_FILE"
+        else
+          echo "Dependencies file not found, skipping conversion."
+        fi
         repo sync -j$(nproc --all)
       working-directory: ${{ steps.pwd.outputs.workspace-folder }}
-      continue-on-error: true
-
+      
     - name: Set Swap Space
       uses: pierotofy/set-swap-space@master
       with:
